@@ -69,6 +69,36 @@ bash ./Tools/setup/ubuntu.sh
 make px4_sitl gz_x500_mono_cam
 ```
 
+### Demo World: person + car (important)
+
+By default, PX4 may launch an empty Gazebo world that contains only the drone. This repository includes a custom world at [`worlds/drone_demo.sdf`](worlds/drone_demo.sdf) with:
+
+- a walking person actor (`person_1`) about 20 m north of the spawn point
+- a Prius car (`car_1`) about 25 m east of the spawn point
+
+Install the demo world into PX4 before launching SITL:
+
+```bash
+# From this repository root
+bash scripts/install_demo_world.sh
+```
+
+Or manually:
+
+```bash
+ln -s "$(pwd)/worlds/drone_demo.sdf" \
+  ~/PX4-Autopilot/Tools/simulation/gz/worlds/drone_demo.sdf
+```
+
+Then launch PX4 with `PX4_GZ_WORLD=drone_demo`:
+
+```bash
+cd ~/PX4-Autopilot
+PX4_GZ_WORLD=drone_demo make px4_sitl gz_x500_mono_cam
+```
+
+If Gazebo still shows only the drone, you are probably running the default PX4 world or Gazebo failed to download the Fuel models on first launch. Check the PX4/Gazebo terminal logs for model download errors.
+
 > **RAM note:** Gazebo + PX4 SITL needs at least 4 GB of free RAM. If you are RAM-constrained, run with `HEADLESS=1 make px4_sitl gz_x500_mono_cam` to suppress the Gazebo GUI.
 
 ### Micro XRCE-DDS Agent
@@ -198,9 +228,11 @@ The full stack requires **four terminals** running simultaneously.
 
 ### Terminal 1 — PX4 SITL + Gazebo
 
+Use the custom demo world so YOLO has objects to detect:
+
 ```bash
-cd PX4-Autopilot
-make px4_sitl gz_x500_mono_cam
+cd ~/PX4-Autopilot
+PX4_GZ_WORLD=drone_demo make px4_sitl gz_x500_mono_cam
 ```
 
 Wait until you see `[commander] Ready for takeoff!` in the PX4 output before proceeding.
@@ -208,7 +240,7 @@ Wait until you see `[commander] Ready for takeoff!` in the PX4 output before pro
 For a headless (no GUI) run to save RAM:
 
 ```bash
-HEADLESS=1 make px4_sitl gz_x500_mono_cam
+HEADLESS=1 PX4_GZ_WORLD=drone_demo make px4_sitl gz_x500_mono_cam
 ```
 
 ### Terminal 2 — Ollama
